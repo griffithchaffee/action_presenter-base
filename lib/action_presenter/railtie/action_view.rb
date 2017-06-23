@@ -1,7 +1,7 @@
 module ActionPresenter
   ActiveSupport.on_load(:action_view) do
     ::ActionView::Base.class_eval do
-    # dynamic presenter initializer
+      # dynamic presenter initializer
       def presenter(presenter_name, *params, &block)
         instance_variable = "@#{presenter_name}_presenter"
         presenter_instance = instance_variable_get(instance_variable)
@@ -18,31 +18,30 @@ module ActionPresenter
       end
 
       # controller presenter
-      def controller_presenter(options = {})
+      def controller_presenter
         return @controller_presenter if @controller_presenter
         presenter_name = controller.presenter_options.presenter_name
-        @controller_presenter = presenter(presenter_name)
-        # attempt to auto set record
-        if @controller_presenter.presenter_options.presents
-          @controller_presenter.record ||= instance_variable_get("@#{@controller_presenter.presenter_options.presents}")
+        @controller_presenter = presenter(presenter_name).tap do |new_presenter|
+          # attempt to auto set record
+          presents = new_presenter.presenter_options.presents
+          new_presenter.record ||= instance_variable_get("@#{new_presenter.presenter_options.presents}")
         end
-        @controller_presenter
       end
 
-      attr_writer :controller_presenter
       alias_method :cp, :controller_presenter
 
       # local presenter
-      def local_presenter(*params)
-        @local_presenter || raise(ArgumentError, "local presenter [lp] has not been defined")
-        # attempt to auto set record
-        if @local_presenter.presenter_options.presents
-          @local_presenter.record ||= instance_variable_get("@#{@local_presenter.presenter_options.presents}")
-        end
-        @local_presenter
+      def local_presenter
+        @local_presenter || raise(ArgumentError, "local presenter [lp] must be provided")
       end
 
-      attr_writer :local_presenter
+      def local_presenter=(new_local_presenter)
+        @local_presenter = new_local_presenter.tap do |new_presenter|
+          # attempt to auto set record
+          new_presenter.record ||= instance_variable_get("@#{new_presenter.presenter_options.presents}")
+        end
+      end
+
       alias_method :lp, :local_presenter
       alias_method :lp=, :local_presenter=
     end

@@ -7,8 +7,10 @@ module ActionPresenter
 
       class << self
         def presenter_options
+          presenter_name = controller_name.gsub(/\W/, "_").underscore
           @presenter_options ||= ActiveSupport::OrderedOptions.new.merge(
-            presenter_name: controller_name.gsub(/\W/, "_").underscore,
+            presenter_name: presenter_name,
+            presents: presenter_name.singularize,
           )
         end
       end

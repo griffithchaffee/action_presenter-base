@@ -35,6 +35,10 @@ module ActionPresenter
       html_tag(:button, *hashes, default_html, &content_block)
     end
 
+    def submit_tag(*hashes, &content_block)
+      view.submit_tag(extract_content(*hashes, content: "Submit", &content_block), extract_html(*hashes))
+    end
+
     def method_field(*hashes, &content_block)
       hidden_field_tag("_method", *hashes, id: nil, value: "post", &content_block)
     end
@@ -134,9 +138,9 @@ module ActionPresenter
     end
 
     # element extensions
-    define_html_method_extension(:script_tag, :javascript_script_tag, type: "text/javascript")
-    define_html_method_extension(:style_tag, :css_style_tag, type: "text/css")
-    define_html_method_extension(:link_to, :tab_to, target: "_blank")
+    define_extension(:script_tag, :javascript_script_tag, type: "text/javascript")
+    define_extension(:style_tag, :css_style_tag, type: "text/css")
+    define_extension(:link_to, :tab_to, target: "_blank")
 
   end
 end

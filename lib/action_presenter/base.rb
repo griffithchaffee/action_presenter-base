@@ -107,14 +107,17 @@ module ActionPresenter
     end
 
     class << self
-      def define_html_method_extension(base_method, new_method, extension_params = {})
+      def define_extension(base_method, new_method, *extension_params)
         define_method(new_method) do |*params, &content_block|
-          send(base_method, *params, extension_params, &content_block)
+          send(base_method, *params, *extension_params.deep_dup, &content_block)
         end
       end
 
       def presenter_options
-        @presenter_options ||= ActiveSupport::OrderedOptions.new.merge(verify_content: true)
+        @presenter_options ||= ActiveSupport::OrderedOptions.new.merge(
+          verify_content: true,
+          presents: name.underscore.remove(/_presenter\z/).singularize.to_sym,
+        )
       end
     end
   end
