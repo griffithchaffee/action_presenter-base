@@ -58,11 +58,18 @@ module ActionPresenter
       end
       # custom class attributes
       if add_classes.present? || remove_classes.present?
-        classes = html_attributes[:class].to_s.split(/\s/)
-        classes += add_classes.map { |classes| classes.to_s.split(/\s/) }.flatten
-        classes -= remove_classes.map { |classes| classes.to_s.split(/\s/) }.flatten
+        classes_to_a = -> (value) do
+          case value
+          when Symbol then classes_to_a.call(send(value))
+          when Array then value.map { |v| classes_to_a.call(v) }
+          else value.to_s.split(/\s/)
+          end.flatten
+        end
+        classes = classes_to_a.call(html_attributes[:class])
+        classes += classes_to_a.call(add_classes)
+        classes -= classes_to_a.call(remove_classes)
         # reverse so classes appear to append in order
-        html_attributes[:class] = classes.uniq.reverse.join(" ").presence
+        html_attributes[:class] = classes.uniq.join(" ").presence
       end
       # custom data attributes
       if merge_data.present? || reverse_merge_data.present?

@@ -140,7 +140,7 @@ module ActionPresenter
     # element extensions
     define_extension(:script_tag, :javascript_script_tag, type: "text/javascript")
     define_extension(:style_tag, :css_style_tag, type: "text/css")
-    define_extension(:link_to, :tab_to, target: "_blank")
+    define_extension(:link_to, :tab_link, target: "_blank")
 
   end
 end

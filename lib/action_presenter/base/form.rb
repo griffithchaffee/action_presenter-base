@@ -2,8 +2,8 @@ module ActionPresenter
   class Base
     attr_reader :form_builder
 
-    def form_tag(*hashes, &content_block)
-      view.form_for(extract_html(*hashes)) do |form_builder|
+    def form_tag(path, *hashes, &content_block)
+      view.form_tag(path, extract_html(*hashes)) do |form_builder|
         self.form_builder = form_builder
         yield(form_builder)
       end

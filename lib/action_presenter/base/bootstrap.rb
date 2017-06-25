@@ -2,8 +2,8 @@ module ActionPresenter
   class Base
     BOOTSTRAP_SIZES = %w[ xs sm md lg ]
     def self.generate_bootstrap_presenter_methods!
-      { col: "", col_offset: "-offset" }.each do |method_namespace, class_namespace|
-        define_method("#{method_namespace}_class") do |*hashes, &content_block|
+      ["", "offset"].each do |namespace|
+        define_method("col_#{namespace}_class".squeeze("_")) do |*hashes, &content_block|
           classes = []
           BOOTSTRAP_SIZES.each do |col_size|
             col_width = extract("col_#{col_size}", *hashes).to_i.nonzero?
@@ -12,10 +12,10 @@ module ActionPresenter
               col_width -= 1 if extract("#{col_size}_compact", *hashes) == true && col_width > 2
               raise ArgumentError, "col_width must be between 1 and 12" if !col_width.between?(1,12)
               # col-sm-3
-              classes << "col-#{col_size}#{class_namespace}-#{col_width}"
+              classes << "col-#{col_size}-#{namespace}-#{col_width}".squeeze("-")
             end
           end
-          classes.join(" ")
+          [extract_html(*hashes)[:class], *classes].join(" ")
         end
       end
 
