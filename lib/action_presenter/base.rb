@@ -78,7 +78,7 @@ module ActionPresenter
         html_attributes[:data].reverse_merge!(reverse_merge_data) if reverse_merge_data.present?
       end
       html_attributes.select do |html_attribute, value|
-        html_attribute.not_in?(PRESENTER_ATTRIBUTES)
+        !html_attribute.in?(PRESENTER_ATTRIBUTES)
       end
     end
 
@@ -131,6 +131,8 @@ module ActionPresenter
 end
 
 require "action_presenter/version"
+require "action_presenter/ruby/string"
+require "action_presenter/ruby/hash"
 require "action_presenter/base/html"
 require "action_presenter/base/form"
 require "action_presenter/base/bootstrap"

@@ -53,34 +53,34 @@ module ActionPresenter
 
     # form elements
     def select_tag(name, *hashes, &content_block)
-      default_html = { id: name.to_s.html_slugify, name: name, class: select_class }
+      default_html = { id: name.to_s.slugify_html, name: name, class: select_class }
       content = extract_content(*hashes, &content_block)
       if !content.is_a?(String)
-        content = view.options_for_select(content, extract(:selected, *hashes, selected: view.params.dig_html(name)))
+        content = view.options_for_select(content, extract(:selected, *hashes, selected: view.params.to_unsafe_h.dig_html(name)))
       end
       view.select_tag(name, content, extract_html(*hashes, default_html))
     end
 
     def text_field_tag(name, *hashes, &content_block)
-      default_html = { id: name.to_s.html_slugify, name: name, class: text_field_class }
-      content = extract_content(*hashes, content: view.params.dig_html(name), &content_block)
+      default_html = { id: name.to_s.slugify_html, name: name, class: text_field_class }
+      content = extract_content(*hashes, content: view.params.to_unsafe_h.dig_html(name), &content_block)
       view.text_field_tag(name, content, extract_html(*hashes, default_html))
     end
 
     def file_field_tag(name, *hashes, &content_block)
-      default_html = { id: name.to_s.html_slugify, name: name, class: file_field_class }
+      default_html = { id: name.to_s.slugify_html, name: name, class: file_field_class }
       view.file_field_tag(name, extract_html(*hashes, default_html))
     end
 
     def hidden_field_tag(name, *hashes, &content_block)
-      default_html = { id: name.to_s.html_slugify, name: name }
-      content = extract_content(*hashes, content: view.params.dig_html(name), &content_block)
+      default_html = { id: name.to_s.slugify_html, name: name }
+      content = extract_content(*hashes, content: view.params.to_unsafe_h.dig_html(name), &content_block)
       view.hidden_field_tag(name, content, extract_html(*hashes, default_html))
     end
 
     def text_area_tag(name, *hashes, &content_block)
-      default_html = { id: name.to_s.html_slugify, name: name, class: text_area_class }
-      content = extract_content(*hashes, content: view.params.dig_html(name), &content_block)
+      default_html = { id: name.to_s.slugify_html, name: name, class: text_area_class }
+      content = extract_content(*hashes, content: view.params.to_unsafe_h.dig_html(name), &content_block)
       view.text_area_tag(name, content, extract_html(*hashes, default_html))
     end
 
@@ -90,21 +90,24 @@ module ActionPresenter
     end
 
     def check_box_tag(name, *hashes, &content_block)
-      default_html = { id: name.to_s.html_slugify, name: name, class: check_box_class }
-      check_box_html = extract_html(*hashes, default_html)
-      unchecked_value = extract(:unchecked_value, *hashes, unchecked_value: "false").presence
-      checked_value   = extract(:checked_value, *hashes, checked_value: "true").presence
-      checked         = extract(:checked, *hashes, checked: view.params.dig_html(name).presence == checked_value).present?
-      unchecked_tag = view.check_box_tag(nil, unchecked_value, true, check_box_html.merge(id: nil, class: "hidden"))
-      checked_tag   = view.check_box_tag(nil, checked_value, checked, check_box_html)
-      unchecked_value.present? ? unchecked_tag + checked_tag : checked_tag
+      default_html    = { id: name.to_s.slugify_html, name: name, class: check_box_class }
+      checked_value   = extract_content(*hashes, content: "true").presence
+      unchecked_value = extract(:unchecked_value, *hashes).presence
+      checked         = extract(:checked, *hashes, checked: view.params.to_unsafe_h.dig_html(name).presence == checked_value).present?
+      check_box_html  = extract_html(*hashes, default_html)
+      content = "".html_safe
+      if unchecked_value.present?
+        content += view.check_box_tag(nil, unchecked_value, true, default_html.merge(id: nil, class: nil, style: "display: none;"))
+      end
+      content + view.check_box_tag(nil, checked_value, checked, check_box_html)
     end
 
     def radio_button_tag(name, *hashes, &content_block)
-      default_html = { id: name.to_s.html_slugify, name: name, class: radio_button_class }
-      content = extract_content(*hashes, &content_block).presence || view.params.dig_html(name).presence
+      default_html = { id: name.to_s.slugify_html, name: name, class: radio_button_class }
+      content = extract_content(*hashes, &content_block).presence
+      active_content = view.params.to_unsafe_h.dig_html(name).presence
       checked = extract(:checked, *hashes)
-      checked = checked.in?([true, false]) ? checked : checked.to_s.presence == content
+      checked = checked.in?([true, false]) ? checked : active_content == content
       view.radio_button_tag(nil, content, checked, extract_html(*hashes, default_html))
     end
 
